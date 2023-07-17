@@ -18,6 +18,9 @@ def find_atom_id(x_find, y_find, z_find):
                 and (Total_xyz[posV3].get('Y') == y_find) \
                 and (Total_xyz[posV3].get('Z') == z_find):
             return Total_xyz[posV3].get('Atom_ID')
+        else:
+            print('No Atom Found in that position!')
+        
 
 
 ##--------------------------------------------------------------------------------------------------------------------##
