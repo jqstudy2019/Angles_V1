@@ -158,6 +158,17 @@ Membrane_Angle_Creation_Dist = 1
 
 Membrane_Angle_Type = 1
 
+##--------------------------------------------------------------------------------------------------------------------##
+#   Dihederal Creation Testing    #
+
+Membrane_Dihederals = {}
+
+Membrane_Numer_Dihederals = 0
+
+Membrane_Dihederal_Creation_Dist = 1
+
+Membrane_Dihederal_Type = 1
+
 ########################################################################################################################
 ##      Geometry Calculations       ##
 for Theta in theta_range:
@@ -214,6 +225,23 @@ for Theta in theta_range:
                                                                                     'atom1':Total_Number_Atoms,
                                                                                     'atom2':bond_atom_ID,
                                                                                     'atom3':angle_atom_ID}
+                                                        
+                                                                #   Dihederals Creation #
+                                                                for x3 in range(x2 - Membrane_Dihederal_Creation_Dist,x2 + Membrane_Dihederal_Creation_Dist):
+                                                                    for y3 in range(y2 - Membrane_Dihederal_Creation_Dist,y2 + Membrane_Dihederal_Creation_Dist):
+                                                                        for z3 in range(z2 - Membrane_Dihederal_Creation_Dist,z2 + Membrane_Dihederal_Creation_Dist):
+                                                                            Dihederal_atom_ID = find_atom_id(x3,y3,z3)
+                                                                            if Dihederal_atom_ID is not None:
+                                                                                if Dihederal_atom_ID != Total_Number_Atoms:
+                                                                                    if Dihederal_atom_ID != bond_atom_ID:
+                                                                                        if Dihederal_atom_ID != angle_atom_ID:
+                                                                                            Membrane_Numer_Dihederals = Membrane_Numer_Dihederals + 1
+                                                                                            Membrane_Dihederals[Membrane_Numer_Dihederals] = {'Angle_ID':Membrane_Numer_Dihederals,
+                                                                                                                'Angle Type': Membrane_Dihederal_Type,
+                                                                                                                'atom1':Total_Number_Atoms,
+                                                                                                                'atom2':bond_atom_ID,
+                                                                                                                'atom3':angle_atom_ID,
+                                                                                                                'atom4':Dihederal_atom_ID}
 
                 else:
                     pass
@@ -229,18 +257,16 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
     fdata.write('{} atoms\n'.format(Total_Number_Atoms))  # Specify number of atoms
     fdata.write('{} bonds\n'.format(Membrane_Number_Bonds))
     fdata.write('{} angles\n'.format(Membrane_Num_Angles))
-
+    fdata.write('{} dihederals\n'.format(Membrane_Numer_Dihederals))
+    
+    fdata.write('\n')
     fdata.write('{} atom types\n'.format(Total_Atom_Types))
-
-    # Bonds Header  #
-    # fdata.write('{} bonds\n'.format(num_molecule_1_bonds))  # Specify number of atoms
-
     fdata.write('{} bond types\n'.format(total_bond_types))
     fdata.write('{} angle types\n'.format(total_angle_types))
     fdata.write('{} dihedral types\n'.format(total_dihedral_types))
 
     #   specify box dimensions      #
-
+    fdata.write('\n')
     fdata.write('{} {} xlo xhi\n'.format(0.0, sim_box_side_length))  # Writes X Position
     fdata.write('{} {} ylo yhi\n'.format(0.0, sim_box_side_length))  # Writes Y Position
     fdata.write('{} {} zlo zhi\n'.format(0.0, sim_box_side_length))  # Writes Z Position
@@ -275,6 +301,17 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
                                             Membrane_Angles[pos].get('atom1'),
                                             Membrane_Angles[pos].get('atom2'),
                                             Membrane_Angles[pos].get('atom3')))    
+    fdata.write('\n')
+
+    #       Dihederals section       #
+    fdata.write('Dihedreals\n\n')
+    for i, pos in enumerate(Membrane_Dihederals):
+        fdata.write('{} {} {} {} {} {} \n'.format(Membrane_Dihederals[pos].get('Angle_ID'),
+                                            Membrane_Dihederals[pos].get('Angle Type'),
+                                            Membrane_Dihederals[pos].get('atom1'),
+                                            Membrane_Dihederals[pos].get('atom2'),
+                                            Membrane_Dihederals[pos].get('atom3'),
+                                            Membrane_Dihederals[pos].get('atom4')))    
     fdata.write('\n')
 ########################################################################################################################
 ###         Ovito Visulalization and Analyis        ###
