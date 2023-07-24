@@ -258,14 +258,14 @@ for Theta in theta_range:
                                                                                            temp_y,
                                                                                            temp_z)}
 
-                    # for Rho1 in range(Rho - Membrane_Bond_1_Length, Rho + Membrane_Bond_1_Length):
-                    # Bond_Neighbors = find_neighbors(Total_Number_Atoms)
-                    # Membrane_Number_Bonds = Membrane_Number_Bonds + 1
-                    # Membrane_Bonds[Membrane_Number_Bonds] = {'Bond_ID': Membrane_Number_Bonds,
-                    # 'Bond_Type': Membrane_Bond_Type,
-                    # 'atom1': Temp_Atom_ID_1,
-                    # 'atom2': Temp_Atom_ID_2,
-                    # 'bond_length': molecule_1_bond_type_1_length}
+                    for Rho1 in range(Rho - Membrane_Bond_1_Length, Rho + Membrane_Bond_1_Length):
+                        Bond_Neighbors = find_neighbors(Total_Number_Atoms)
+                        Membrane_Number_Bonds = Membrane_Number_Bonds + 1
+                        Membrane_Bonds[Membrane_Number_Bonds] = {'Bond_ID': Membrane_Number_Bonds,
+                        'Bond_Type': Membrane_Bond_Type,
+                        'atom1': Temp_Atom_ID_1,
+                        'atom2': Temp_Atom_ID_2,
+                        'bond_length': molecule_1_bond_type_1_length}
 
             # Water Section
             if Rho in np.linspace(20, 40):
