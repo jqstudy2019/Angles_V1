@@ -27,6 +27,37 @@ from ovito.vis import Viewport
 
 ########################################################################################################################
 ##      Self Defined Functions      ##
+
+##--------------------------------------------------------------------------------------------------------------------##
+def angle_3_pts(pointA, pointB, pointC):
+    # Convert the points to NumPy arrays
+    pointA = np.array(pointA)
+    pointB = np.array(pointB)
+    pointC = np.array(pointC)
+    
+    # Calculate vectors AB and BC
+    vector_AB = pointB - pointA
+    vector_BC = pointC - pointB
+    
+    # Calculate dot product of AB and BC
+    dot_product = np.dot(vector_AB, vector_BC)
+    
+    # Calculate magnitudes of AB and BC
+    magnitude_AB = np.linalg.norm(vector_AB)
+    magnitude_BC = np.linalg.norm(vector_BC)
+    
+    # Calculate the cosine of the angle
+    cos_theta = dot_product / (magnitude_AB * magnitude_BC)
+    
+    # Calculate the angle in radians
+    theta_radians = np.arccos(cos_theta)
+    
+    # Convert the angle to degrees
+    theta_degrees = np.degrees(theta_radians)
+    
+    return theta_degrees
+
+##--------------------------------------------------------------------------------------------------------------------##
 def find_atom_id(x_find, y_find, z_find,verbose= False):
     for iV3, posV3 in enumerate(Total_xyz):
         if (Total_xyz[posV3].get('X') == x_find) \
@@ -196,24 +227,26 @@ for Theta in theta_range:
                                     if bond_atom_ID != Total_Number_Atoms:
                                         Membrane_Number_Bonds = Membrane_Number_Bonds + 1
                                         Membrane_Bonds[Membrane_Number_Bonds] = {'Bond_ID':Membrane_Number_Bonds,
-                                                            'Bond Type': Membrane_Bond_Type,
-                                                            'atom1':Total_Number_Atoms,
-                                                            'atom2':bond_atom_ID}
+                                                                                'Bond Type': Membrane_Bond_Type,
+                                                                                'atom1':Total_Number_Atoms,
+                                                                                'atom2':bond_atom_ID}
                     
                                         #   Angles Creation #
                                         for x2 in range(x1 - Membrane_Angle_Creation_Dist,x1 + Membrane_Angle_Creation_Dist):
                                             for y2 in range(y1 - Membrane_Angle_Creation_Dist,y1 + Membrane_Angle_Creation_Dist):
                                                 for z2 in range(z1 - Membrane_Angle_Creation_Dist,z1 + Membrane_Angle_Creation_Dist):
                                                     angle_atom_ID = find_atom_id(x2,y2,z2)
-                                                    if angle_atom_ID is not None:
-                                                        if angle_atom_ID != Total_Number_Atoms:
-                                                            if angle_atom_ID != bond_atom_ID:
-                                                                Membrane_Num_Angles = Membrane_Num_Angles + 1
-                                                                Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
-                                                                                    'Angle Type': Membrane_Angle_Type,
-                                                                                    'atom1':Total_Number_Atoms,
-                                                                                    'atom2':bond_atom_ID,
-                                                                                    'atom3':angle_atom_ID}
+                                                    angle_theta = angle_3_pts((x2,y2,z2))
+                                                    if 90 <= angle_theta <= 130:
+                                                        if angle_atom_ID is not None:
+                                                            if angle_atom_ID != Total_Number_Atoms:
+                                                                if angle_atom_ID != bond_atom_ID:
+                                                                    Membrane_Num_Angles = Membrane_Num_Angles + 1
+                                                                    Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
+                                                                                                            'Angle Type': Membrane_Angle_Type,
+                                                                                                            'atom1':Total_Number_Atoms,
+                                                                                                            'atom2':bond_atom_ID,
+                                                                                                            'atom3':angle_atom_ID}
 
                 else:
                     pass
