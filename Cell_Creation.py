@@ -27,7 +27,6 @@ from ovito.vis import Viewport
 
 ########################################################################################################################
 ##      Self Defined Functions      ##
-
 ##--------------------------------------------------------------------------------------------------------------------##
 def angle_3_pts(pointA=list, pointB=list, pointC=list):
     # Convert the points to NumPy arrays
@@ -38,21 +37,18 @@ def angle_3_pts(pointA=list, pointB=list, pointC=list):
     # Calculate vectors AB and BC
     vector_AB = pointB - pointA
     vector_BC = pointC - pointB
-    try: 
-        check4nan(vector_AB)
-        check4nan(vector_BC)
-        check4zero(vector_AB)
-        check4zero(vector_BC)
-        # Calculate dot product of AB and BC
-        dot_product = np.dot(vector_AB, vector_BC)
-        #print('Dot Prod:', dot_product)
+
+    # Calculate dot product of AB and BC
+    dot_product = np.dot(vector_AB, vector_BC)
+    #print('Dot Prod:', dot_product)
+
+    # Calculate magnitudes of AB and BC
+    magnitude_AB = np.linalg.norm(vector_AB)
+    magnitude_BC = np.linalg.norm(vector_BC)
+    #print('Magnitues:',magnitude_AB,magnitude_BC)
     
-        # Calculate magnitudes of AB and BC
-        magnitude_AB = np.linalg.norm(vector_AB)
-        magnitude_BC = np.linalg.norm(vector_BC)
-        #print('Magnitues:',magnitude_AB,magnitude_BC)
-        
-        # Calculate the cosine of the angle
+    # Calculate the cosine of the angle
+    if check4nan(magnitude_AB) and check4nan(magnitude_BC) and check4zero(magnitude_AB) and check4zero(magnitude_BC):
         cos_theta = dot_product / (magnitude_AB * magnitude_BC)
 
         # Calculate the angle in radians
@@ -60,24 +56,27 @@ def angle_3_pts(pointA=list, pointB=list, pointC=list):
         
         # Convert the angle to degrees
         theta_degrees = np.degrees(theta_radians)
-    
+
         return theta_degrees
     
-    except ValueError as e:
-       #print(e)
-       return e
+    else:
+        return None
+   
 
 
 ##--------------------------------------------------------------------------------------------------------------------##
 def check4nan(list):
     if np.any(np.isnan(list)):
-        raise ValueError("One or more vectors contain NaN values.")
+        return True
+    else:
+        return False
     
 ##--------------------------------------------------------------------------------------------------------------------##
 def check4zero(list):
     if np.any(list) == 0:
-        raise ValueError("One or more vectors contain 0 values.")
-
+        return True
+    else:
+        return False
 ##--------------------------------------------------------------------------------------------------------------------##
 def find_atom_id(x_find, y_find, z_find,verbose= False):
     for iV3, posV3 in enumerate(Total_xyz):
@@ -210,6 +209,7 @@ Membrane_Angle_Creation_Dist = 1
 
 Membrane_Angle_Type = 1
 
+angles_aggre = []
 ########################################################################################################################
 ##      Geometry Calculations       ##
 for Theta in theta_range:
@@ -258,7 +258,8 @@ for Theta in theta_range:
                                                 for z2 in range(z1 - Membrane_Angle_Creation_Dist,z1 + Membrane_Angle_Creation_Dist):
                                                     angle_atom_ID = find_atom_id(x2,y2,z2)
                                                     angle_theta = angle_3_pts(temp_x_y_z,[x1,y1,z1],[x2,y2,z2])
-                                                    try:
+                                                    if angle_theta is not None:
+                                                        angles_aggre.append(angle_theta) 
                                                         if 90 <= angle_theta <= 130:
                                                             if angle_atom_ID is not None:
                                                                 if angle_atom_ID != Total_Number_Atoms:
@@ -269,7 +270,7 @@ for Theta in theta_range:
                                                                                                                 'atom1':Total_Number_Atoms,
                                                                                                                 'atom2':bond_atom_ID,
                                                                                                                 'atom3':angle_atom_ID}
-                                                    except:
+                                                    else:
                                                         pass
 
                 else:
@@ -350,4 +351,7 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
 
 ########################################################################################################################
 ###         Finished!!!     ###
+avg_ang = np.mean(angles_aggre)
+
 print(' Data File Created Successfully!!! ; File name => {} '.format(filename))
+print('Average Angle in File: ', avg_ang)
