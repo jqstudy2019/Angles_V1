@@ -47,20 +47,17 @@ def angle_3_pts(pointA=list, pointB=list, pointC=list):
     magnitude_BC = np.linalg.norm(vector_BC)
     #print('Magnitues:',magnitude_AB,magnitude_BC)
     
-    # Calculate the cosine of the angle
-    if check4nan(magnitude_AB) and check4nan(magnitude_BC) and check4zero(magnitude_AB) and check4zero(magnitude_BC):
-        cos_theta = dot_product / (magnitude_AB * magnitude_BC)
+# Calculate the cosine of the angle
+    cos_theta = dot_product / (magnitude_AB * magnitude_BC)
 
-        # Calculate the angle in radians
-        theta_radians = np.arccos(cos_theta)
-        
-        # Convert the angle to degrees
-        theta_degrees = np.degrees(theta_radians)
-
-        return theta_degrees
+    # Calculate the angle in radians
+    theta_radians = np.arccos(cos_theta)
     
-    else:
-        return None
+    # Convert the angle to degrees
+    theta_degrees = np.degrees(theta_radians)
+
+    return round(theta_degrees,2)
+
    
 
 
@@ -187,10 +184,13 @@ Total_Molecule_Type = 1
 rho_range_end = sim_box_side_length / 2
 
 theta_range = np.linspace(0, np.pi) # Mofified per Nate and Chat GPT 
+theta_range_len = len(theta_range)
 
 phi_range = np.linspace(0, 2 * np.pi)
+phi_range_len = len(phi_range)
 
 rho_range = np.linspace(0, rho_range_end)
+rho_range_len = len(rho_range)
 
 total_bond_types = 1
 
@@ -198,6 +198,9 @@ total_angle_types = 1
 
 total_dihedral_types = 1
 
+max_iter = theta_range_len * phi_range_len
+
+iter_counter = 0 
 ##--------------------------------------------------------------------------------------------------------------------##
 #   Angle Creation Testing    #
 
@@ -214,8 +217,10 @@ angles_aggre = []
 ##      Geometry Calculations       ##
 for Theta in theta_range:
     for Phi in phi_range:
+        iter_counter = iter_counter + 1
+        percent_done = (round((iter_counter/max_iter),4))*100
+        print("Progress:",str(percent_done)+"%","done")
         for Rho in rho_range:
-
             # Membrane Section
             if Rho in np.linspace(15, 16):
                 temp_x_y_z = sphere2cart(Rho, Theta, Phi)
@@ -258,21 +263,20 @@ for Theta in theta_range:
                                                 for z2 in range(z1 - Membrane_Angle_Creation_Dist,z1 + Membrane_Angle_Creation_Dist):
                                                     angle_atom_ID = find_atom_id(x2,y2,z2)
                                                     angle_theta = angle_3_pts(temp_x_y_z,[x1,y1,z1],[x2,y2,z2])
-                                                    if angle_theta is not None:
-                                                        angles_aggre.append(angle_theta) 
-                                                        if 90 <= angle_theta <= 130:
-                                                            if angle_atom_ID is not None:
-                                                                if angle_atom_ID != Total_Number_Atoms:
-                                                                    if angle_atom_ID != bond_atom_ID:
-                                                                        Membrane_Num_Angles = Membrane_Num_Angles + 1
-                                                                        Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
-                                                                                                                'Angle Type': Membrane_Angle_Type,
-                                                                                                                'atom1':Total_Number_Atoms,
-                                                                                                                'atom2':bond_atom_ID,
-                                                                                                                'atom3':angle_atom_ID}
+                                                    angles_aggre.append(angle_theta)
+                                                    print(len(angles_aggre)) 
+                                                    if 110.0 <= angle_theta <= 130.0:
+                                                        if angle_atom_ID is not None:
+                                                            if angle_atom_ID != Total_Number_Atoms:
+                                                                if angle_atom_ID != bond_atom_ID:
+                                                                    Membrane_Num_Angles = Membrane_Num_Angles + 1
+                                                                    Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
+                                                                                                            'Angle Type': Membrane_Angle_Type,
+                                                                                                            'atom1':Total_Number_Atoms,
+                                                                                                            'atom2':bond_atom_ID,
+                                                                                                            'atom3':angle_atom_ID}
                                                     else:
-                                                        pass
-
+                                                        pass                                             
                 else:
                     pass
 ########################################################################################################################
@@ -351,7 +355,7 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
 
 ########################################################################################################################
 ###         Finished!!!     ###
-avg_ang = np.mean(angles_aggre)
+avg_ang = sum(angles_aggre)/len(angles_aggre)
 
 print(' Data File Created Successfully!!! ; File name => {} '.format(filename))
 print('Average Angle in File: ', avg_ang)
