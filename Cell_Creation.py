@@ -21,6 +21,7 @@
 ##      Import Extra Modules / Tools        ##
 import random as random
 import numpy as np  # Numpy is used for Array Creation and Manipulation Mainly
+from numpy import nan
 
 from ovito.io import import_file
 from ovito.vis import Viewport
@@ -56,24 +57,20 @@ def angle_3_pts(pointA=list, pointB=list, pointC=list):
     # Convert the angle to degrees
     theta_degrees = np.degrees(theta_radians)
 
-    return round(theta_degrees,2)
+    return float(round(theta_degrees,2))
 
    
 
 
 ##--------------------------------------------------------------------------------------------------------------------##
-def check4nan(list):
-    if np.any(np.isnan(list)):
-        return True
-    else:
-        return False
+def remove_NaNs(oldlist):
+    newlist = list()
+    for element in oldlist:
+        if str(element) != 'nan':
+            newlist.append(element)
     
-##--------------------------------------------------------------------------------------------------------------------##
-def check4zero(list):
-    if np.any(list) == 0:
-        return True
-    else:
-        return False
+    return newlist
+
 ##--------------------------------------------------------------------------------------------------------------------##
 def find_atom_id(x_find, y_find, z_find,verbose= False):
     for iV3, posV3 in enumerate(Total_xyz):
@@ -264,7 +261,6 @@ for Theta in theta_range:
                                                     angle_atom_ID = find_atom_id(x2,y2,z2)
                                                     angle_theta = angle_3_pts(temp_x_y_z,[x1,y1,z1],[x2,y2,z2])
                                                     angles_aggre.append(angle_theta)
-                                                    print(len(angles_aggre)) 
                                                     if 110.0 <= angle_theta <= 130.0:
                                                         if angle_atom_ID is not None:
                                                             if angle_atom_ID != Total_Number_Atoms:
@@ -275,8 +271,8 @@ for Theta in theta_range:
                                                                                                             'atom1':Total_Number_Atoms,
                                                                                                             'atom2':bond_atom_ID,
                                                                                                             'atom3':angle_atom_ID}
-                                                    else:
-                                                        pass                                             
+                                                        else:
+                                                            pass                                             
                 else:
                     pass
 ########################################################################################################################
@@ -353,9 +349,15 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
 # image_filename = filename + 'imgae.png'
 # vp.render_image(filename=image_filename,size=(1920,1080))
 
-########################################################################################################################
+# ########################################################################################################################
 ###         Finished!!!     ###
+angles_aggre = remove_NaNs(angles_aggre)
 avg_ang = sum(angles_aggre)/len(angles_aggre)
 
 print(' Data File Created Successfully!!! ; File name => {} '.format(filename))
-print('Average Angle in File: ', avg_ang)
+
+print('\n\n####  Angles Debugging  #####',
+      '\n  Average Angle in File: ', round(avg_ang,2),
+      '\n Sum of Angles: ', sum(angles_aggre),
+      '\n Length of angles_aggre list: ',len(angles_aggre))
+       #'\n Angles List: ', angles_aggre )
