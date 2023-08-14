@@ -22,6 +22,8 @@
 import random as random
 import numpy as np  # Numpy is used for Array Creation and Manipulation Mainly
 from numpy import nan
+import sys
+import time as sleep 
 
 from ovito.io import import_file
 from ovito.vis import Viewport
@@ -210,13 +212,23 @@ Membrane_Angle_Creation_Dist = 1
 Membrane_Angle_Type = 1
 
 angles_aggre = []
+
+avg_angle_prev  =  141.27
+
+angle_create_range = 5
+
+max_angle_per_atom  = 5 
+
+print('\n')
 ########################################################################################################################
 ##      Geometry Calculations       ##
 for Theta in theta_range:
     for Phi in phi_range:
+        sys.stdout.write('\r')
         iter_counter = iter_counter + 1
         percent_done = (round((iter_counter/max_iter),4))*100
-        print("Progress:",str(percent_done)+"%","done")
+        sys.stdout.write("\rGeometry Creation Progress: {:.2f}% done".format(percent_done))
+        sys.stdout.flush()
         for Rho in rho_range:
             # Membrane Section
             if Rho in np.linspace(15, 16):
@@ -258,21 +270,29 @@ for Theta in theta_range:
                                         for x2 in range(x1 - Membrane_Angle_Creation_Dist,x1 + Membrane_Angle_Creation_Dist):
                                             for y2 in range(y1 - Membrane_Angle_Creation_Dist,y1 + Membrane_Angle_Creation_Dist):
                                                 for z2 in range(z1 - Membrane_Angle_Creation_Dist,z1 + Membrane_Angle_Creation_Dist):
+                                                    angles_in_atom = 0 
                                                     angle_atom_ID = find_atom_id(x2,y2,z2)
                                                     angle_theta = angle_3_pts(temp_x_y_z,[x1,y1,z1],[x2,y2,z2])
                                                     angles_aggre.append(angle_theta)
-                                                    if 110.0 <= angle_theta <= 130.0:
+                                                    if avg_angle_prev - angle_create_range <= angle_theta <= avg_angle_prev + angle_create_range:
                                                         if angle_atom_ID is not None:
                                                             if angle_atom_ID != Total_Number_Atoms:
                                                                 if angle_atom_ID != bond_atom_ID:
+                                                                    angles_in_atom = angles_in_atom +1
                                                                     Membrane_Num_Angles = Membrane_Num_Angles + 1
                                                                     Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
                                                                                                             'Angle Type': Membrane_Angle_Type,
                                                                                                             'atom1':Total_Number_Atoms,
                                                                                                             'atom2':bond_atom_ID,
-                                                                                                            'atom3':angle_atom_ID}
-                                                        else:
-                                                            pass                                             
+                                                                                                            'atom3':angle_atom_ID,
+                                                                                                            'Angle Theta': angle_theta}
+                                                                    if angles_in_atom >= max_angle_per_atom:
+                                                                        break
+                                            if angles_in_atom >= max_angle_per_atom:
+                                                break
+                                        if angles_in_atom >= max_angle_per_atom:
+                                            break
+                                                                                                 
                 else:
                     pass
 ########################################################################################################################
@@ -354,10 +374,14 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
 angles_aggre = remove_NaNs(angles_aggre)
 avg_ang = sum(angles_aggre)/len(angles_aggre)
 
-print(' Data File Created Successfully!!! ; File name => {} '.format(filename))
+thetas = [entry['Angle Theta'] for entry in Membrane_Angles.values()]
 
-print('\n\n####  Angles Debugging  #####',
-      '\n  Average Angle in File: ', round(avg_ang,2),
-      '\n Sum of Angles: ', sum(angles_aggre),
-      '\n Length of angles_aggre list: ',len(angles_aggre))
-       #'\n Angles List: ', angles_aggre )
+print('\n\n Data File Created Successfully!!! ; File name => {} '.format(filename))
+
+print('\n\n\n####  Angles Debugging  #####',
+      '\n  Average Angle for all Particles (Includes non created angles): ', round(avg_ang,2),
+      '\n  Average Angle of created Angles (only saved angles) ', round(sum(thetas)/len(thetas),2),
+      #'\n  Average Angles Per Atom : ', sum(angles_per_atom)/len(angles_per_atom),
+      '\n\n  ##  Angle Creation Params  ##',
+      '\n # of Angles Considered: ',len(angles_aggre),
+      '\n # of Angles Created: ', len(Membrane_Angles))
