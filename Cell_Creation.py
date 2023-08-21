@@ -24,6 +24,7 @@ import numpy as np  # Numpy is used for Array Creation and Manipulation Mainly
 from numpy import nan
 import sys
 import time as sleep 
+import math
 
 from ovito.io import import_file
 from ovito.vis import Viewport
@@ -274,24 +275,25 @@ for Theta in theta_range:
                                                     angle_atom_ID = find_atom_id(x2,y2,z2)
                                                     angle_theta = angle_3_pts(temp_x_y_z,[x1,y1,z1],[x2,y2,z2])
                                                     angles_aggre.append(angle_theta)
-                                                    if avg_angle_prev - angle_create_range <= angle_theta <= avg_angle_prev + angle_create_range:
-                                                        if angle_atom_ID is not None:
-                                                            if angle_atom_ID != Total_Number_Atoms:
-                                                                if angle_atom_ID != bond_atom_ID:
-                                                                    angles_in_atom = angles_in_atom +1
-                                                                    Membrane_Num_Angles = Membrane_Num_Angles + 1
-                                                                    Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
-                                                                                                            'Angle Type': Membrane_Angle_Type,
-                                                                                                            'atom1':Total_Number_Atoms,
-                                                                                                            'atom2':bond_atom_ID,
-                                                                                                            'atom3':angle_atom_ID,
-                                                                                                            'Angle Theta': angle_theta}
-                                                                    if angles_in_atom >= max_angle_per_atom:
-                                                                        break
+                                                    if not math.isnan(angle_theta):
+                                                        if avg_angle_prev - angle_create_range <= angle_theta <= avg_angle_prev + angle_create_range:
+                                                            if angle_atom_ID is not None:
+                                                                if angle_atom_ID != Total_Number_Atoms:
+                                                                    if angle_atom_ID != bond_atom_ID:
+                                                                        angles_in_atom = angles_in_atom +1
+                                                                        Membrane_Num_Angles = Membrane_Num_Angles + 1
+                                                                        Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
+                                                                                                                'Angle Type': Membrane_Angle_Type,
+                                                                                                                'atom1':Total_Number_Atoms,
+                                                                                                                'atom2':bond_atom_ID,
+                                                                                                                'atom3':angle_atom_ID,
+                                                                                                                'Angle Theta': angle_theta}
+                                                                        if angles_in_atom >= max_angle_per_atom:
+                                                                            break
+                                                if angles_in_atom >= max_angle_per_atom:
+                                                    break
                                             if angles_in_atom >= max_angle_per_atom:
                                                 break
-                                        if angles_in_atom >= max_angle_per_atom:
-                                            break
                                                                                                  
                 else:
                     pass
