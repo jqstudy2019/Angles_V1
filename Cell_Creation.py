@@ -52,8 +52,9 @@ def angle_3_pts(pointA=list, pointB=list, pointC=list):
     #print('Magnitues:',magnitude_AB,magnitude_BC)
     
 # Calculate the cosine of the angle
-    cos_theta = dot_product / (magnitude_AB * magnitude_BC)
-
+    cos_theta = dot_product / 1
+    a= ((magnitude_AB * magnitude_BC) + 1e-6)
+    print(a)
     # Calculate the angle in radians
     theta_radians = np.arccos(cos_theta)
     
@@ -73,6 +74,19 @@ def remove_NaNs(oldlist):
             newlist.append(element)
     
     return newlist
+
+##--------------------------------------------------------------------------------------------------------------------##
+def are_sets_equal(set1, set2):
+    tuple1 = tuple(sorted(set1))
+    tuple2 = tuple(sorted(set2))
+    return tuple1 == tuple2
+
+##--------------------------------------------------------------------------------------------------------------------##
+def check_list_for_duplicates(set_list, target_set):
+    for s in set_list:
+        if are_sets_equal(s, target_set):
+            return True  # Found a duplicate set
+    return False  # No duplicates found
 
 ##--------------------------------------------------------------------------------------------------------------------##
 def find_atom_id(x_find, y_find, z_find,verbose= False):
@@ -220,6 +234,8 @@ angle_create_range = 5
 
 max_angle_per_atom  = 5 
 
+checklist = []
+
 print('\n')
 ########################################################################################################################
 ##      Geometry Calculations       ##
@@ -278,18 +294,21 @@ for Theta in theta_range:
                                                     if not math.isnan(angle_theta):
                                                         if avg_angle_prev - angle_create_range <= angle_theta <= avg_angle_prev + angle_create_range:
                                                             if angle_atom_ID is not None:
-                                                                if angle_atom_ID != Total_Number_Atoms:
-                                                                    if angle_atom_ID != bond_atom_ID:
-                                                                        angles_in_atom = angles_in_atom +1
-                                                                        Membrane_Num_Angles = Membrane_Num_Angles + 1
-                                                                        Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
-                                                                                                                'Angle Type': Membrane_Angle_Type,
-                                                                                                                'atom1':Total_Number_Atoms,
-                                                                                                                'atom2':bond_atom_ID,
-                                                                                                                'atom3':angle_atom_ID,
-                                                                                                                'Angle Theta': angle_theta}
-                                                                        if angles_in_atom >= max_angle_per_atom:
-                                                                            break
+                                                                if bond_atom_ID is not None:
+                                                                    if angle_atom_ID != Total_Number_Atoms:
+                                                                        if angle_atom_ID != bond_atom_ID:
+                                                                            if not check_list_for_duplicates(checklist,[Total_Number_Atoms,bond_atom_ID,angle_atom_ID]):
+                                                                                checklist.append([Total_Number_Atoms,bond_atom_ID,angle_atom_ID])
+                                                                                angles_in_atom = angles_in_atom +1
+                                                                                Membrane_Num_Angles = Membrane_Num_Angles + 1
+                                                                                Membrane_Angles[Membrane_Num_Angles] = {'Angle_ID':Membrane_Num_Angles,
+                                                                                                                        'Angle Type': Membrane_Angle_Type,
+                                                                                                                        'atom1':Total_Number_Atoms,
+                                                                                                                        'atom2':bond_atom_ID,
+                                                                                                                        'atom3':angle_atom_ID,
+                                                                                                                        'Angle Theta': angle_theta}
+                                                                                if angles_in_atom >= max_angle_per_atom:
+                                                                                    break
                                                 if angles_in_atom >= max_angle_per_atom:
                                                     break
                                             if angles_in_atom >= max_angle_per_atom:
@@ -317,7 +336,7 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
 
     fdata.write('{} bond types\n'.format(total_bond_types))
     fdata.write('{} angle types\n'.format(total_angle_types))
-    fdata.write('{} dihedral types\n'.format(total_dihedral_types))
+   # fdata.write('{} dihedral types\n'.format(total_dihedral_types))
 
     #   specify box dimensions      #
 
@@ -356,6 +375,7 @@ with open(filename, 'w+') as fdata:  # opens a text file named a for the 'filena
                                             Membrane_Angles[pos].get('atom2'),
                                             Membrane_Angles[pos].get('atom3')))    
     fdata.write('\n')
+
 ########################################################################################################################
 ###         Ovito Visulalization and Analyis        ###
 
